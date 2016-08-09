@@ -1,0 +1,9 @@
+{
+  "framework": "mocha",
+  "ignore_missing_launchers": true,
+  "after_tests": "rm bundle.js",
+  "before_tests": "node_modules/.bin/browserify tests.js -o bundle.js -t [ babelify --presets [ es2015 ] ]",
+  "serve_files": [
+    "bundle.js"
+  ]
+}

@@ -1,6 +1,6 @@
 import xstream from "xstream"
 import {useQueries, createHashHistory, createHistory, createLocation, useBasename} from "history"
-import path2regex from "path-to-regexp"
+import * as pathToRegexp from "path-to-regexp"
 import global from "global-object"
 
 const document = global.document
@@ -34,21 +34,21 @@ function makePageDriver(options = {}) {
     })
 
   const maps = {
-    "PUSH": history.push,
-    "REPLACE": history.replace,
-    "FORWARD":  history.goForward,
-    "BACK": history.goBack
+    PUSH: history.push,
+    REPLACE: history.replace,
+    FORWARD: history.goForward,
+    BACK: history.goBack
   }
 
   function next(directive) {
-    if (!directive.action in maps)
+    if (!(directive.action in maps))
       throw new TypeError('Expected action enumeration, bot got "' + directive.action + '"')
     else {
-      const callback = maps[directive.action], {path, queryString, state} = directive.location
-      callback({
+      const { path, queryString, state } = directive.location
+      maps[ directive.action ]({
         query: queryString,
         pathname: path,
-        state
+        state: state
       })
     }
   }
@@ -74,13 +74,13 @@ function makePageDriver(options = {}) {
     }
 
     for (let id in routes) {
-      const keys = [], regex = path2regex(routes[id], keys), matches = regex.exec(location.pathname)
-      if (matches) {
-        context.args = {}
-        keys.forEach(key => context.args[key.name] = decodeURIComponent(matches[1]))
-        context.name = id
-        break
-      }
+      // const keys = [], regex = pathToRegexp(routes[id], keys), matches = regex.exec(location.pathname)
+      // if (matches) {
+      //   context.args = {}
+      //   keys.forEach(key => context.args[key.name] = decodeURIComponent(matches[1]))
+      //   context.name = id
+      //   break
+      // }
     }
 
     return context
@@ -106,8 +106,7 @@ function makePageDriver(options = {}) {
           running = true
           click && document.addEventListener("click", onClick, false)
           unsubscibe = history.listen(location => {
-            listener.next(match(location, options.patterns || {}))
-            listener.complete()
+            location.action == "PUSH" && listener.next(match(location, options.patterns || {}))
           })
         }
       },
