@@ -1,0 +1,13 @@
+{
+  "name": "cycle-page",
+  "license": "MIT",
+  "description": "Tiny client-side router for Cycle.js",
+  "version": "1.0.0",
+  "dependencies": {
+    "global-object": "^1.0.0",
+    "history": "^3.0.0",
+    "path-to-regexp": "^1.5.3",
+    "xstream": "^5.3.2"
+  },
+  "devDependencies": {}
+}
