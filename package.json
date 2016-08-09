@@ -9,5 +9,9 @@
     "path-to-regexp": "^1.5.3",
     "xstream": "^5.3.2"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "browserify": "^13.1.0",
+    "mocha": "^3.0.2",
+    "testem": "^1.10.3"
+  }
 }

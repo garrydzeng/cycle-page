@@ -59,17 +59,17 @@ function makePageDriver(options = {}) {
 
   function match(location, routes) {
 
-    const currentLocation = global.location
+    const orginal = global.location
+    const {query, pathname, state} = location
     const context = {
       location: {
-        host: "",
-        protocol: "",
-        path: "",
-        canonicalPath: "",
+        host: orginal.host,
+        protocol: orginal.protocol,
+        path: pathname,
+        canonicalPath: pathname.replace(baseName, ""),
         baseName: baseName,
-        state: {},
-        queryString: {
-        }
+        state: state,
+        queryString: query
       }
     }
 
@@ -77,7 +77,7 @@ function makePageDriver(options = {}) {
       const keys = [], regex = path2regex(routes[id], keys), matches = regex.exec(location.pathname)
       if (matches) {
         context.args = {}
-        keys.forEach(key => context.args[key.name] = matches[1])
+        keys.forEach(key => context.args[key.name] = decodeURIComponent(matches[1]))
         context.name = id
         break
       }
