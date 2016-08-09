@@ -18,47 +18,47 @@ const main = () => {
 
 describe("cycle-page", () => {
   
-  // it("should nagivate url by hash fragment, if option.hash == true.", () => {
-  //   const page = makePageDriver({ hash: true })
-  //   run(main, { page })
-  //   assert.strictEqual(location.hash, "#/")
-  // })
+  it("should nagivate url by hash fragment, if option.hash == true.", () => {
+    const page = makePageDriver({ hash: true })
+    run(main, { page })
+    assert.strictEqual(location.hash, "#/")
+  })
 
-  // it("should contains basename.", () => {
-  //   const page = makePageDriver({ hash: true, baseName: "cycle" })
-  //   run(main, { page })
-  //   assert.strictEqual(location.hash, "#cycle/")
-  // })
+  it("should contains basename.", () => {
+    const page = makePageDriver({ hash: true, baseName: "cycle" })
+    run(main, { page })
+    assert.strictEqual(location.hash, "#cycle/")
+  })
 
-  // it("should receive a Context with specified properties.", () => {
-  //   const main2 = ({ page }) => {
-  //     page.addListener({
-  //       error: noop,
-  //       complete: noop,
-  //       next: context => {
-  //         assert.deepEqual(context, {
-  //           location: {
-  //             host: location.host,
-  //             protocol: location.protocol,
-  //             path: "/",
-  //             canonicalPath: "/",
-  //             queryString: {},
-  //             state: undefined,
-  //             baseName: undefined
-  //           }
-  //         })
-  //       }
-  //     })
-  //     return main({
-  //       page
-  //     })
-  //   }
-  //   run(main2, {
-  //     page: makePageDriver({
-  //       hash: true
-  //     })
-  //   })
-  // })
+  it("should receive a Context with specified properties.", () => {
+    const main2 = ({ page }) => {
+      page.addListener({
+        error: noop,
+        complete: noop,
+        next: context => {
+          assert.deepEqual(context, {
+            location: {
+              host: location.host,
+              protocol: location.protocol,
+              path: "/",
+              canonicalPath: "/",
+              baseName: undefined,
+              state: undefined,
+              queryString: {}
+            }
+          })
+        }
+      })
+      return main({
+        page
+      })
+    }
+    run(main2, {
+      page: makePageDriver({
+        hash: true
+      })
+    })
+  })
 
   it("should pass url arguments.", () => {
     const main2 = ({ page }) => {
@@ -66,9 +66,9 @@ describe("cycle-page", () => {
         error: noop,
         complete: noop,
         next: context => {
-          // assert.deepEqual(context.args, {
-          //   id: "identity"
-          // })
+          assert.deepEqual(context.args, {
+            id: "identity"
+          })
         }
       })
       return {

@@ -1,7 +1,8 @@
 import xstream from "xstream"
 import {useQueries, createHashHistory, createHistory, createLocation, useBasename} from "history"
-import * as pathToRegexp from "path-to-regexp"
+import pathToRegexp from "path-to-regexp"
 import global from "global-object"
+import {relative} from "path"
 
 const document = global.document
 const click = document && document.ontouchstart ? "touchstart" : "click"
@@ -53,8 +54,12 @@ function makePageDriver(options = {}) {
     }
   }
 
-  function decodeURIComponent(value) {
+  function decode(value) {
     return typeof value == "string" ? decodeURIComponent(value.replace(/\+/g, ' ')) : value
+  }
+
+  function removeBaseName(baseName, path) {
+    return path.indexOf(baseName) === 0 ? path.substring(baseName.length) : path
   }
 
   function match(location, routes) {
@@ -66,7 +71,7 @@ function makePageDriver(options = {}) {
         host: orginal.host,
         protocol: orginal.protocol,
         path: pathname,
-        canonicalPath: pathname.replace(baseName, ""),
+        canonicalPath: removeBaseName(baseName, pathname),
         baseName: baseName,
         state: state,
         queryString: query
@@ -74,13 +79,13 @@ function makePageDriver(options = {}) {
     }
 
     for (let id in routes) {
-      // const keys = [], regex = pathToRegexp(routes[id], keys), matches = regex.exec(location.pathname)
-      // if (matches) {
-      //   context.args = {}
-      //   keys.forEach(key => context.args[key.name] = decodeURIComponent(matches[1]))
-      //   context.name = id
-      //   break
-      // }
+      const keys = [], regex = pathToRegexp(routes[id], keys), matches = regex.exec(pathname)      
+      if (matches) {
+        context.args = {}
+        keys.forEach(key => context.args[key.name] = decode(matches[1]))
+        context.name = id
+        break
+      }
     }
 
     return context
