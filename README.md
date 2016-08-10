@@ -12,7 +12,7 @@ interface Location {
   host: string,
   protocol: string,
   path: string,
-  canonicalPath: string,
+  canonicalPath: string, // path without baseName
   baseName?: string,
   state?: any,
   queryString?: {
@@ -21,7 +21,7 @@ interface Location {
 }
 ```
 
-`Action` represents a history operation.  
+`Action` represents a history operation:  
 
 - push : Adds new `Location` into history stack.
 - replace : Updates the most recent entry on the history stack to newly `Location`.
@@ -40,7 +40,7 @@ enum Action {
 User uses `Directive` to controls history behavior.  
 location is optional,  
 because not all action needs it.  
-suce as `back` action.
+such as `back` action.
 
 ```ts
 interface Directive {
@@ -49,7 +49,7 @@ interface Directive {
 }
 ```
 
-Driver send a `Context` to your data component when history changed.  
+Driver sends a `Context` to your data component when history changed.  
 
 ```ts
 interface Context {
