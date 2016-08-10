@@ -46,7 +46,7 @@ function makePageDriver(options = {}) {
       throw new TypeError('Expected action enumeration, bot got "' + directive.action + '"')
     else {
       const { path, queryString, state } = directive.location
-      maps[ directive.action ]({
+      maps[directive.action]({
         query: queryString,
         pathname: path,
         state: state

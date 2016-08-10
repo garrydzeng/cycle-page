@@ -2,8 +2,6 @@
 
 Welcome use this driver!  
 It help you manage browser history and receive newly `Location`.  
-This document, I will explain all concepts.  
-and take a Tutorials.  
 
 # Concepts
 
@@ -23,12 +21,12 @@ interface Location {
 }
 ```
 
-`Action` is set of operator of history.  
+`Action` represents a history operation.  
 
-- push 
-- replace
-- forward
-- back 
+- push : Adds new `Location` into history stack.
+- replace : Updates the most recent entry on the history stack to newly `Location`.
+- forward : Goes to the next page in history stack.
+- back : Goes to the previous page.
 
 ```ts
 enum Action {
@@ -39,3 +37,122 @@ enum Action {
 }
 ```
 
+User uses `Directive` to controls history behavior.  
+location is optional,  
+because not all action needs it.  
+suce as `back` action.
+
+```ts
+interface Directive {
+  location?: Location,
+  action: Action
+}
+```
+
+Driver send a `Context` to your data component when history changed.  
+
+```ts
+interface Context {
+  name?: string,
+  location: Location,
+  args?: {
+    [name: string]: string
+  }
+}
+```
+
+User uses `Option` to controls driver behavior.  
+
+```ts
+interface Option {
+  hash?: boolean,
+  baseName?: string,
+  click?: boolean,
+  patterns?: {
+    [name: string]: string
+  }
+}
+```
+
+Detail of option:
+
+- hash : Use hash fragment instead of url.
+- baseName : If provided, all path will relatives to it.
+- click : Whether to capture DOM click event.
+- patterns : Defines url pattern.
+
+# Driver exports
+
+```ts
+const action = {
+  push,
+  replace,
+  forward,
+  back
+}
+
+function PageDriver(directive$ : Stream<Directive>, runStreamAdapter : any = null) => Stream<Context>
+function makePageDriver(option : Option = {}) => PageDriver
+```
+
+# Examples
+
+Send inital `Directive` (requirement).
+
+```ts
+import {run} from "@cycle/xstream-run"
+import {makePageDriver, action} from "cycle-page"
+import xstream from "xstream"
+
+function main() {
+  return {
+    page: xstream.of({
+      action: action.push,
+      location: {
+        path: "/"
+      }
+    })
+  }
+}
+
+run(main, {
+  page: makePageDriver()
+})
+```
+
+Show difference component for difference url.
+
+```ts
+import {run} from "@cycle/xstream-run"
+import {makePageDriver, action} from "cycle-page"
+import xstream from "xstream"
+import {makeDOMDriver} from "@cycle/dom"
+
+function main({ dom, page }) {
+  return {
+    dom: page.map(context => {
+      switch (context.name) {
+        case "index": return ...indexComponent...
+        case "userDetail": return ...userDetailComponent...
+        default: return ...404... 
+      }
+    }),
+    page: xstream.of({
+      action: action.push,
+      location: {
+        path: "/"
+      }
+    })
+  }
+}
+
+run(main, {
+  dom: makeDOMDriver(document.body),
+  page: makePageDriver({
+    patterns: {
+      userDetail: "/users/:id",
+      index: "/"
+    }
+  })
+})
+```
