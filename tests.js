@@ -38,6 +38,7 @@ describe("cycle-page", () => {
         complete: noop,
         next: context => {
           assert.deepEqual(context, {
+            args: {},
             location: {
               host: location.host,
               protocol: location.protocol,

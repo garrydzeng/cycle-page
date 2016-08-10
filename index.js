@@ -1,8 +1,9 @@
 import xstream from "xstream"
 import domEvents from "dom-events"
-import {useQueries, createHashHistory, createHistory, createLocation, useBasename} from "history"
+import {useQueries, createHashHistory, createHistory, useBasename} from "history"
 import pathToRegexp from "path-to-regexp"
 import global from "global-object"
+import {createLocation} from "history/lib/LocationUtils"
 
 const document = global.document
 const click = document && document.ontouchstart ? "touchstart" : "click"
@@ -25,6 +26,7 @@ function makePageDriver(options = {}) {
   const hash = options.hash || false
   const baseName = options.baseName || undefined
   const click = options.click || true
+  const patterns = options.patterns || {}
 
   // history
   const historyCreator = useQueries(supportsHistory && !hash ? createHistory : createHashHistory)
@@ -54,19 +56,16 @@ function makePageDriver(options = {}) {
     }
   }
 
-  function decode(value) {
-    return typeof value == "string" ? decodeURIComponent(value.replace(/\+/g, ' ')) : value
-  }
-
   function removeBaseName(baseName, path) {
     return path.indexOf(baseName) === 0 ? path.substring(baseName.length) : path
   }
 
-  function match(location, routes) {
+  function match(routes, location) {
 
     const orginal = global.location
     const {query, pathname, state} = location
     const context = {
+      args: {},
       location: {
         host: orginal.host,
         protocol: orginal.protocol,
@@ -81,8 +80,7 @@ function makePageDriver(options = {}) {
     for (let id in routes) {
       const keys = [], regex = pathToRegexp(routes[id], keys), matches = regex.exec(pathname)      
       if (matches) {
-        context.args = {}
-        keys.forEach(key => context.args[key.name] = decode(matches[1]))
+        keys.forEach(key => context.args[key.name] = matches[1])
         context.name = id
         break
       }
@@ -139,19 +137,32 @@ function makePageDriver(options = {}) {
     let unsubscibe = null
 
     click && domEvents.on(document, "click", onClick)
-    directive$.addListener({
-      next: next,
-      complete: noop,
-      error: noop
-    })
+
+    // listen to stream if user provided...
+    if (directive$) {
+      directive$.addListener({
+        next: next,
+        complete: noop,
+        error: noop
+      })
+    }
 
     return xstream.create({
       start: function startPageStream(listener) {
         if (!running) {
           running = true
           unsubscibe = history.listen(location => {
-            location.action == "PUSH" && listener.next(match(location, options.patterns || {}))
+            location.action == "PUSH" && listener.next(match(patterns, location))
           })
+        }
+        // if user not provided initial directive, we emit current location to user also.
+        if (!directive$) {
+          const location = global.location
+          listener.next(match(patterns, createLocation({
+            search: location.search,
+            hash: location.hash,
+            pathname: location.pathname
+          })))
         }
       },
       stop: function stopPageStream() {
