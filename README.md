@@ -79,7 +79,7 @@ Detail of option:
 - hash : Use hash fragment instead of url.
 - baseName : If provided, all path will relatives to it.
 - click : Whether to capture DOM click event.
-- patterns : Defines url pattern.
+- patterns : Define url pattern.
 
 # Driver exports
 
@@ -131,16 +131,52 @@ import {makeDOMDriver} from "@cycle/dom"
 function main({ dom, page }) {
   return {
     dom: page.map(context => {
+      // name will be matched pattern's name defined in option.
       switch (context.name) {
-        case "index": return ...indexComponent...
-        case "userDetail": return ...userDetailComponent...
-        default: return ...404... 
+        case "index": break
+        case "userDetail": break
+        default: break
       }
     }),
     page: xstream.of({
       action: action.push,
       location: {
         path: "/"
+      }
+    })
+  }
+}
+
+run(main, {
+  dom: makeDOMDriver(document.body),
+  page: makePageDriver({
+    patterns: {
+      userDetail: "/users/:id",
+      index: "/"
+    }
+  })
+})
+```
+
+Use path argument.
+
+```ts
+import {run} from "@cycle/xstream-run"
+import {makePageDriver, action} from "cycle-page"
+import xstream from "xstream"
+import {makeDOMDriver, div} from "@cycle/dom"
+
+function main({ dom, page }) {
+  return {
+    dom: page
+      .map(context => context.args.id)
+      .map(id => div(`Hello ${id}!`))
+      .startWith(div())
+    ,
+    page: xstream.of({
+      action: action.push,
+      location: {
+        path: "/users/cycle"
       }
     })
   }

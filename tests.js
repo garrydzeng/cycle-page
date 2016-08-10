@@ -2,6 +2,7 @@ import {run} from "@cycle/xstream-run"
 import xstream from "xstream"
 import {makePageDriver, action} from "./index"
 import assert from "assert"
+import {makeDOMDriver, a} from "@cycle/dom"
 
 function noop(){}
 
@@ -92,5 +93,18 @@ describe("cycle-page", () => {
 
   it("should capture link clicks when option.click === true", () => {
 
+    // option.click defaults to true...
+    run(main, {
+      page: makePageDriver({
+        hash: true
+      })
+    })
+
+    const node = document.createElement("a")
+    node.href = "/aa"
+    document.body.appendChild(node)
+    node.click()
+
+    assert.strictEqual(location.hash, "#/aa")
   })
 })

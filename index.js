@@ -1,8 +1,8 @@
 import xstream from "xstream"
+import domEvents from "dom-events"
 import {useQueries, createHashHistory, createHistory, createLocation, useBasename} from "history"
 import pathToRegexp from "path-to-regexp"
 import global from "global-object"
-import {relative} from "path"
 
 const document = global.document
 const click = document && document.ontouchstart ? "touchstart" : "click"
@@ -91,14 +91,54 @@ function makePageDriver(options = {}) {
     return context
   }
 
+  function origin() {
+    let location = global.location, result = `${location.protocol}//${location.hostname}`
+    return location.port ?
+      result + `:${location.port}`:
+      result
+    ;
+  }
+
+  function isSameOrigin(url) {
+    return url && url.indexOf(origin()) === 0
+  }
+
+  function which(event) {
+    return event.which === null ? event.button : event.which
+  }
+
   function onClick(event) {
 
+    if (which(event) !== 1) return
+    if (event.metaKey || event.ctrlKey || event.shiftKey) return
+    if (event.defaultPrevented) return
+
+    let node = event.target
+    while (node && node.nodeName !== 'A') {
+      node = node.parentNode
+    }
+
+    if (node == null) return
+    if (node.nodeName !== 'A') return
+    if (node.getAttribute("rel") === "external") return
+    if (node.hasAttribute("download")) return
+    if (node.target) return
+    if (!isSameOrigin(node.href)) return
+
+    let path = node.pathname + node.search
+    if (node.hash) {
+      path += node.hash
+    }
+
+    event.preventDefault()
+    history.push(path)
   }
 
   return function PageDriver(directive$, runStreamAdapter) {
 
     let unsubscibe = null
 
+    click && domEvents.on(document, "click", onClick)
     directive$.addListener({
       next: next,
       complete: noop,
@@ -109,7 +149,6 @@ function makePageDriver(options = {}) {
       start: function startPageStream(listener) {
         if (!running) {
           running = true
-          click && document.addEventListener("click", onClick, false)
           unsubscibe = history.listen(location => {
             location.action == "PUSH" && listener.next(match(location, options.patterns || {}))
           })
@@ -118,7 +157,6 @@ function makePageDriver(options = {}) {
       stop: function stopPageStream() {
         if (running) {
           running = false
-          click && document.removeEventListener("click", onClick, false)
           unsubscibe()
         }
       }
