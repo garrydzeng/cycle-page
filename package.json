@@ -19,6 +19,20 @@
     "mocha": "^3.0.2",
     "testem": "^1.10.3"
   },
+  "author": {
+    "name": "Garry"
+  },
+  "keywords": [
+    "history",
+    "Cycle",
+    "Cycle.js",
+    "route",
+    "xstream"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/garrydzeng/cycle-page"
+  },
   "scripts": {
     "test": "node_modules/.bin/testem ci"
   }
