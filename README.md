@@ -61,6 +61,7 @@ interface Context {
 }
 ```
 
+Finally, driver accepts an optional `Option` to initialization.
 
 ```ts
 interface Option {
