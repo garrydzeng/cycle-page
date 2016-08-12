@@ -17,9 +17,27 @@ const action = {
   back: "BACK"
 }
 
-let running = false
-
 function noop(){}
+
+function removeBaseName(baseName, path) {
+  return path.indexOf(baseName) === 0 ? path.substring(baseName.length) : path
+}
+
+function origin() {
+  let location = global.location, result = `${location.protocol}//${location.hostname}`
+  return location.port ?
+    result + `:${location.port}`:
+    result
+  ;
+}
+
+function isSameOrigin(url) {
+  return url && url.indexOf(origin()) === 0
+}
+
+function which(event) {
+  return event.which === null ? event.button : event.which
+}
 
 function makePageDriver(options = {}) {
 
@@ -29,26 +47,26 @@ function makePageDriver(options = {}) {
   const patterns = options.patterns || {}
 
   // history
-  const historyCreator = useQueries(supportsHistory && !hash ? createHistory : createHashHistory)
+  const buildHistory = useQueries(supportsHistory && !hash ? createHistory : createHashHistory)
   const history = typeof baseName == "undefined" ?
-    historyCreator():
-    useBasename(historyCreator)({
+    buildHistory():
+    useBasename(buildHistory)({
       basename: baseName
     })
 
-  const maps = {
-    PUSH: history.push,
-    REPLACE: history.replace,
-    FORWARD: history.goForward,
-    BACK: history.goBack
+  const map = {
+    [action.push]: history.push,
+    [action.replace]: history.replace,
+    [action.forward]: history.goForward,
+    [action.back]: history.goBack
   }
 
   function next(directive) {
-    if (!(directive.action in maps))
+    if (!(directive.action in map))
       throw new TypeError('Expected action enumeration, bot got "' + directive.action + '"')
     else {
       const { path, queryString, state } = directive.location
-      maps[directive.action]({
+      map[directive.action]({
         query: queryString,
         pathname: path,
         state: state
@@ -56,8 +74,26 @@ function makePageDriver(options = {}) {
     }
   }
 
-  function removeBaseName(baseName, path) {
-    return path.indexOf(baseName) === 0 ? path.substring(baseName.length) : path
+  function handleClick(event) {
+
+    if (which(event) !== 1) return
+    if (event.metaKey || event.ctrlKey || event.shiftKey) return
+    if (event.defaultPrevented) return
+
+    let node = event.target
+    while (node && node.nodeName !== 'A') {
+      node = node.parentNode
+    }
+
+    if (node == null) return
+    if (node.nodeName !== 'A') return
+    if (node.getAttribute("rel") === "external") return
+    if (node.hasAttribute("download")) return
+    if (node.target) return
+    if (!isSameOrigin(node.href)) return
+
+    event.preventDefault()
+    history.push(node.pathname + node.search + node.hash)
   }
 
   function match(routes, location) {
@@ -89,54 +125,9 @@ function makePageDriver(options = {}) {
     return context
   }
 
-  function origin() {
-    let location = global.location, result = `${location.protocol}//${location.hostname}`
-    return location.port ?
-      result + `:${location.port}`:
-      result
-    ;
-  }
-
-  function isSameOrigin(url) {
-    return url && url.indexOf(origin()) === 0
-  }
-
-  function which(event) {
-    return event.which === null ? event.button : event.which
-  }
-
-  function onClick(event) {
-
-    if (which(event) !== 1) return
-    if (event.metaKey || event.ctrlKey || event.shiftKey) return
-    if (event.defaultPrevented) return
-
-    let node = event.target
-    while (node && node.nodeName !== 'A') {
-      node = node.parentNode
-    }
-
-    if (node == null) return
-    if (node.nodeName !== 'A') return
-    if (node.getAttribute("rel") === "external") return
-    if (node.hasAttribute("download")) return
-    if (node.target) return
-    if (!isSameOrigin(node.href)) return
-
-    let path = node.pathname + node.search
-    if (node.hash) {
-      path += node.hash
-    }
-
-    event.preventDefault()
-    history.push(path)
-  }
-
   return function PageDriver(directive$, runStreamAdapter) {
 
-    let unsubscibe = null
-
-    click && domEvents.on(document, "click", onClick)
+    click && domEvents.on(document, "click", handleClick)
 
     // listen to stream if user provided...
     if (directive$) {
@@ -148,14 +139,15 @@ function makePageDriver(options = {}) {
     }
 
     return xstream.create({
+      stop: noop,
       start: function startPageStream(listener) {
-        if (!running) {
-          running = true
-          unsubscibe = history.listen(location => {
-            location.action == "PUSH" && listener.next(match(patterns, location))
-          })
-        }
-        // if user not provided initial directive, we emit current location to user also.
+        
+        // hack??
+        this.stop = history.listen(location => {
+          location.action == "PUSH" && listener.next(match(patterns, location))
+        })
+
+        // if user not provided initial directive, we emit current location alternative.
         if (!directive$) {
           const location = global.location
           listener.next(match(patterns, createLocation({
@@ -163,12 +155,6 @@ function makePageDriver(options = {}) {
             hash: location.hash,
             pathname: location.pathname
           })))
-        }
-      },
-      stop: function stopPageStream() {
-        if (running) {
-          running = false
-          unsubscibe()
         }
       }
     })
