@@ -1,7 +1,7 @@
 # Introduction
 
 Welcome use this driver!  
-It help you manage browser history and receive newly `Location`.  
+It help you manage browser history and receive `Location`.  
 
 # Concepts
 
@@ -61,7 +61,6 @@ interface Context {
 }
 ```
 
-User uses `Option` to controls driver behavior.  
 
 ```ts
 interface Option {
@@ -84,20 +83,27 @@ Detail of option:
 # Driver exports
 
 ```ts
+function makePageDriver(option : Option) : (directive$ : Stream<Directive>) => Stream<Context>
+```
+
+Action is plain object.
+
+```ts
 const action = {
   push,
   replace,
   forward,
   back
 }
-
-function PageDriver(directive$ : Stream<Directive>, runStreamAdapter : any = null) => Stream<Context>
-function makePageDriver(option : Option = {}) => PageDriver
 ```
+
+# Work with path arguments.
+
+please see [path-to-regexp#parameters](https://github.com/pillarjs/path-to-regexp#parameters) !
 
 # Examples
 
-Send inital `Directive` (requirement).
+Send initial `Directive`.
 
 ```ts
 import {run} from "@cycle/xstream-run"
@@ -116,26 +122,33 @@ function main() {
 }
 
 run(main, {
-  page: makePageDriver()
+  page: makePageDriver({
+    hash: true
+  })
 })
 ```
 
-Show difference component for difference url.
+Show component by url.
 
 ```ts
 import {run} from "@cycle/xstream-run"
 import {makePageDriver, action} from "cycle-page"
 import xstream from "xstream"
-import {makeDOMDriver} from "@cycle/dom"
+import {makeDOMDriver, div} from "@cycle/dom"
+
+const map = {
+  index: div("From index"),
+  userDetail: div("")
+}
 
 function main({ dom, page }) {
   return {
     dom: page.map(context => {
       // name will be matched pattern's name defined in option.
       switch (context.name) {
-        case "index": break
-        case "userDetail": break
-        default: break
+        case "index": return div("index")
+        case "userDetail": return div(`Hello ${context.args.id}`)
+        default: return div("404")
       }
     }),
     page: xstream.of({
@@ -156,6 +169,7 @@ run(main, {
     }
   })
 })
+
 ```
 
 Use path argument.
@@ -168,11 +182,9 @@ import {makeDOMDriver, div} from "@cycle/dom"
 
 function main({ dom, page }) {
   return {
-    dom: page
-      .map(context => context.args.id)
-      .map(id => div(`Hello ${id}!`))
-      .startWith(div())
-    ,
+    dom: page.map(context => {
+      return div(`Hello ${context.args.id}!`)
+    }),
     page: xstream.of({
       action: action.push,
       location: {
