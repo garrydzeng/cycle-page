@@ -1,7 +1,6 @@
 # Introduction
 
-Welcome use this driver!  
-It help you manage browser history and receive `Location`.  
+This driver help you manage browser history and receive `Location`.  
 
 # Concepts
 
@@ -83,11 +82,13 @@ Detail of option:
 
 # Driver exports
 
+Main function
+
 ```ts
 function makePageDriver(option : Option) : (directive$ : Stream<Directive>) => Stream<Context>
 ```
 
-Action is plain object.
+and Action constant...
 
 ```ts
 const action = {
