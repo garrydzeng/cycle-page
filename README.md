@@ -138,11 +138,6 @@ import {makePageDriver, action} from "cycle-page"
 import xstream from "xstream"
 import {makeDOMDriver, div} from "@cycle/dom"
 
-const map = {
-  index: div("From index"),
-  userDetail: div("")
-}
-
 function main({ dom, page }) {
   return {
     dom: page.map(context => {
@@ -206,3 +201,8 @@ run(main, {
   })
 })
 ```
+
+# Testing
+
+Please install `browserify`, `bebelify` and `testem` as global.  
+Run testem in test directory.  

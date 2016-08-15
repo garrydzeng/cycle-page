@@ -1,0 +1,8 @@
+{
+  "framework": "mocha",
+  "before_tests": "browserify index.js -o browser.js -t babelify",
+  "ignore_missing_launchers": true,
+  "serve_files": [
+    "browser.js"
+  ]
+}

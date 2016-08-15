@@ -138,12 +138,13 @@ function makePageDriver(options = {}) {
       })
     }
 
+    let unsubscrbe
+
     return xstream.create({
-      stop: noop,
       start: function startPageStream(listener) {
         
         // hack??
-        this.stop = history.listen(location => {
+        unsubscrbe = history.listen(location => {
           location.action == "PUSH" && listener.next(match(patterns, location))
         })
 
@@ -156,6 +157,10 @@ function makePageDriver(options = {}) {
             pathname: location.pathname
           })))
         }
+      },
+      stop: function stopPageStream() {
+        click && domEvents.off(document, "click", handleClick)
+        unsubscrbe()
       }
     })
   }

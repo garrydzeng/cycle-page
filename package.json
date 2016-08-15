@@ -34,6 +34,6 @@
     "url": "https://github.com/garrydzeng/cycle-page"
   },
   "scripts": {
-    "test": "node_modules/.bin/testem ci"
+    "test": "cd test && testem"
   }
 }
