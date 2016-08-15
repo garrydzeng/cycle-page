@@ -3,6 +3,7 @@ import domEvents from "dom-events"
 import {useQueries, createHashHistory, createHistory, useBasename} from "history"
 import pathToRegexp from "path-to-regexp"
 import global from "global-object"
+import {createLocation} from "history/lib/LocationUtils"
 
 const document = global.document
 const click = document && document.ontouchstart ? "touchstart" : "click"
@@ -95,7 +96,7 @@ function makePageDriver(options = {}) {
     history.push(node.pathname + node.search + node.hash)
   }
 
-  function match(location, routes) {
+  function match(routes, location) {
 
     const orginal = global.location
     const {query, pathname, state} = location
@@ -144,15 +145,17 @@ function makePageDriver(options = {}) {
         
         // hack??
         unsubscrbe = history.listen(location => {
-          location.action == "PUSH" && listener.next(match(location, patterns))
+          location.action == "PUSH" && listener.next(match(patterns, location))
         })
 
         // if user not provided initial directive, we emit current location alternative.
         if (!directive$) {
-          listener.next(match(
-            history.getCurrentLocation(),
-            patterns
-          ))
+          const location = global.location
+          listener.next(match(patterns, createLocation({
+            search: location.search,
+            hash: location.hash,
+            pathname: location.pathname
+          })))
         }
       },
       stop: function stopPageStream() {
