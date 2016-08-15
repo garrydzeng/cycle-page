@@ -12,6 +12,7 @@
   },
   "devDependencies": {
     "@cycle/xstream-run": "^3.0.4",
+    "babelify": "^7.3.0",
     "babel-preset-es2015": "^6.13.2"
   },
   "author": "Garry",
@@ -21,6 +22,12 @@
     "Cycle.js",
     "route",
     "xstream"
+  ],
+  "files": [
+    "index.js",
+    "index.d.ts",
+    "README.md",
+    "LICENSE"
   ],
   "repository": {
     "type": "git",
