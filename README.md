@@ -201,8 +201,3 @@ run(main, {
   })
 })
 ```
-
-# Testing
-
-Please install `browserify`, `bebelify` and `testem` as global.  
-Run testem in test directory.  

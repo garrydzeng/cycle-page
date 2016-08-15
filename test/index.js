@@ -2,7 +2,6 @@ import Cycle from "@cycle/xstream-run"
 import xstream from "xstream"
 import {makePageDriver, action} from "../index"
 import assert from "assert"
-import {makeDOMDriver, a} from "@cycle/dom"
 
 function noop() {}
 function main() {

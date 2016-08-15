@@ -2,7 +2,7 @@
   "name": "cycle-page",
   "license": "MIT",
   "description": "Tiny client-side router for Cycle.js",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "dependencies": {
     "global-object": "^1.0.0",
     "history": "^3.0.0",
@@ -11,17 +11,10 @@
     "dom-events": "^0.1.1"
   },
   "devDependencies": {
-    "@cycle/dom": "^12.0.3",
     "@cycle/xstream-run": "^3.0.4",
-    "babel-preset-es2015": "^6.13.2",
-    "babelify": "^7.3.0",
-    "browserify": "^13.1.0",
-    "mocha": "^3.0.2",
-    "testem": "^1.10.3"
+    "babel-preset-es2015": "^6.13.2"
   },
-  "author": {
-    "name": "Garry"
-  },
+  "author": "Garry",
   "keywords": [
     "history",
     "Cycle",
