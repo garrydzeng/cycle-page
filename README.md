@@ -27,6 +27,13 @@ interface Location {
 - forward : Goes to the next page in history stack.
 - back : Goes to the previous page.
 
+They are string:
+
+- push is "PUSH"
+- replace is "REPLACE"
+- forward is "FORWARD"
+- back is "BACK"
+
 ```ts
 enum Action {
   push,
@@ -109,13 +116,13 @@ Send initial `Directive`.
 
 ```ts
 import {run} from "@cycle/xstream-run"
-import {makePageDriver, action} from "cycle-page"
+import {makePageDriver, Action} from "cycle-page"
 import xstream from "xstream"
 
 function main() {
   return {
     page: xstream.of({
-      action: action.push,
+      action: Action.push,
       location: {
         path: "/"
       }
@@ -134,7 +141,7 @@ Show component by url.
 
 ```ts
 import {run} from "@cycle/xstream-run"
-import {makePageDriver, action} from "cycle-page"
+import {makePageDriver, Action} from "cycle-page"
 import xstream from "xstream"
 import {makeDOMDriver, div} from "@cycle/dom"
 
@@ -149,7 +156,7 @@ function main({ dom, page }) {
       }
     }),
     page: xstream.of({
-      action: action.push,
+      action: Action.push,
       location: {
         path: "/"
       }
@@ -173,7 +180,7 @@ Use path argument.
 
 ```ts
 import {run} from "@cycle/xstream-run"
-import {makePageDriver, action} from "cycle-page"
+import {makePageDriver, Action} from "cycle-page"
 import xstream from "xstream"
 import {makeDOMDriver, div} from "@cycle/dom"
 
@@ -183,7 +190,7 @@ function main({ dom, page }) {
       return div(`Hello ${context.args.id}!`)
     }),
     page: xstream.of({
-      action: action.push,
+      action: Action.push,
       location: {
         path: "/users/cycle"
       }
@@ -201,3 +208,11 @@ run(main, {
   })
 })
 ```
+
+# Development globals
+
+Please install bellow package in global.
+
+- babel-cli 
+- testem
+- browserify

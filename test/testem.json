@@ -1,6 +1,6 @@
 {
   "framework": "mocha",
-  "before_tests": "browserify index.js -o browser.js -t babelify",
+  "before_tests": "browserify index.js -o browser.js -t babelify --extension .es",
   "ignore_missing_launchers": true,
   "serve_files": [
     "browser.js"

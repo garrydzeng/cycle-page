@@ -4,17 +4,17 @@ import {useQueries, createHashHistory, createHistory, useBasename} from "history
 import pathToRegexp from "path-to-regexp"
 import global from "global-object"
 
-const document = global.document
-const click = document && document.ontouchstart ? "touchstart" : "click"
-const history1 = global.history
-const supportsHistory = history1 && "pushState" in history1
-
-const action = {
+const Action = {
   push: "PUSH",
   replace: "REPLACE",
   forward: "FORWARD",
   back: "BACK"
 }
+
+const document = global.document
+const click = document && document.ontouchstart ? "touchstart" : "click"
+const history = global.history
+const supportsHistory = history && "pushState" in history
 
 function noop(){}
 
@@ -23,9 +23,9 @@ function removeBaseName(baseName, path) {
 }
 
 function origin() {
-  let location = global.location, result = `${location.protocol}//${location.hostname}`
+  let location = global.location, result = location.protocol + "//" + location.hostname
   return location.port ?
-    result + `:${location.port}`:
+    result + ":" + location.port :
     result
   ;
 }
@@ -53,23 +53,42 @@ function makePageDriver(options = {}) {
       basename: baseName
     })
 
-  const map = {
-    [action.push]: history.push,
-    [action.replace]: history.replace,
-    [action.forward]: history.goForward,
-    [action.back]: history.goBack
-  }
-
   function next(directive) {
-    if (!(directive.action in map))
-      throw new TypeError('Expected action enumeration, bot got "' + directive.action + '"')
-    else {
-      const { path, queryString, state } = directive.location
-      map[directive.action]({
-        query: queryString,
-        pathname: path,
-        state: state
-      })
+    const action = directive.action
+    switch (action) {
+
+      /** Bellow action does not neeed location information... */
+      case Action.back:
+      case Action.forward: {
+        action == Action.forward ? history.goForward() : history.goBack()
+        break
+      }
+
+      case Action.push:
+      case Action.replace: {
+        
+        // foreign domain
+        const {host, protocol, path, queryString, state} = directive.location
+        if (host) {
+          if (!isSameOrigin(url)) {
+            action == Action.push ? location.href = url : location.replace(url)
+            break
+          }
+        }
+
+        const callback = action == Action.push ? history.push : history.replace
+        callback({
+          query: queryString,
+          pathname: path,
+          state: state
+        })
+
+        break
+      }
+
+      default: throw new TypeError(
+        'Expected action enumeration, but got "' + typeof action + '"'
+      )
     }
   }
 
@@ -149,7 +168,6 @@ function makePageDriver(options = {}) {
 
         // if user not provided initial directive, we emit current location alternative.
         if (!directive$) {
-          const location = global.location
           listener.next(match(
             history.getCurrentLocation(),
             patterns
@@ -166,5 +184,5 @@ function makePageDriver(options = {}) {
 
 export {
   makePageDriver,
-  action
+  Action
 }

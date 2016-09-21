@@ -1,13 +1,13 @@
 import Cycle from "@cycle/xstream-run"
 import xstream from "xstream"
-import {makePageDriver, action} from "../index"
+import {makePageDriver, Action} from "../index"
 import assert from "assert"
 
 function noop() {}
 function main() {
   return {
     page: xstream.of({
-      action: action.push,
+      action: Action.push,
       location: {
         path: "/test"
       }
@@ -69,7 +69,7 @@ describe("cycle-page", () => {
     const main = () => {
       return {
         page: xstream.of({
-          action: action.push,
+          action: Action.push,
           location: {
             path: "/test/identity"
           }
@@ -112,4 +112,24 @@ describe("cycle-page", () => {
 
     assert.strictEqual(location.pathname, "/")
   })
+
+  it("should rediret to foreign domain", () => {
+
+    const main = () => {
+      return {
+        page: xstream.of({
+          action: Action.push,
+          location: {
+            host: "www.google.com",
+            protocol: "https"
+          }
+        })
+      }
+    }
+
+    Cycle.run(main, {
+      page: makePageDriver()
+    })
+  })
+
 })
