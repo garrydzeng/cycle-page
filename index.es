@@ -70,6 +70,7 @@ function makePageDriver(options = {}) {
         // foreign domain
         const {host, protocol, path, queryString, state} = directive.location
         if (host) {
+          const url = (protocol || "http") + "://" + host, location = window.location
           if (!isSameOrigin(url)) {
             action == Action.push ? location.href = url : location.replace(url)
             break
