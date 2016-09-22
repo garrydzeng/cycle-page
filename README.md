@@ -12,6 +12,7 @@ interface Location {
   protocol: string,
   path: string,
   canonicalPath: string, // path without baseName
+  hash?: string,
   baseName?: string,
   state?: any,
   queryString?: {
@@ -26,13 +27,6 @@ interface Location {
 - replace : Updates the most recent entry on the history stack to newly `Location`.
 - forward : Goes to the next page in history stack.
 - back : Goes to the previous page.
-
-They are string:
-
-- push is "PUSH"
-- replace is "REPLACE"
-- forward is "FORWARD"
-- back is "BACK"
 
 ```ts
 enum Action {
@@ -99,10 +93,10 @@ and Action constant...
 
 ```ts
 const action = {
-  push,
-  replace,
-  forward,
-  back
+  push: "PUSH",
+  replace: "REPLACE",
+  forward: "FORWARD",
+  back: "BACK"
 }
 ```
 
@@ -176,43 +170,29 @@ run(main, {
 
 ```
 
-Use path argument.
+Redirection
 
 ```ts
 import {run} from "@cycle/xstream-run"
 import {makePageDriver, Action} from "cycle-page"
 import xstream from "xstream"
-import {makeDOMDriver, div} from "@cycle/dom"
 
-function main({ dom, page }) {
+function main() {
   return {
-    dom: page.map(context => {
-      return div(`Hello ${context.args.id}!`)
-    }),
     page: xstream.of({
       action: Action.push,
       location: {
-        path: "/users/cycle"
+        protocol: 'https',
+        host: 'www.google.com',
+        queryString: {
+          q: 'cycle.js'
+        }
       }
     })
   }
 }
 
 run(main, {
-  dom: makeDOMDriver(document.body),
-  page: makePageDriver({
-    patterns: {
-      userDetail: "/users/:id",
-      index: "/"
-    }
-  })
+  page: makePageDriver()
 })
 ```
-
-# Development globals
-
-Please install bellow package in global.
-
-- babel-cli 
-- testem
-- browserify

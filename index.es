@@ -1,6 +1,9 @@
 import xstream from "xstream"
 import domEvents from "dom-events"
+import {supportsHistory} from "history/lib/DOMUtils"
 import {useQueries, createHashHistory, createHistory, useBasename} from "history"
+import {createPath} from "history/lib/PathUtils"
+import qs from "querystring"
 import pathToRegexp from "path-to-regexp"
 import global from "global-object"
 
@@ -13,8 +16,7 @@ const Action = {
 
 const document = global.document
 const click = document && document.ontouchstart ? "touchstart" : "click"
-const history = global.history
-const supportsHistory = history && "pushState" in history
+const enabledHistory = supportsHistory()
 
 function noop(){}
 
@@ -38,6 +40,14 @@ function which(event) {
   return event.which === null ? event.button : event.which
 }
 
+function build(pathname, queryString, hash = undefined) {
+  return createPath({
+    search: "?" + qs.stringify(queryString),
+    pathname: pathname,
+    hash: hash
+  })
+}
+
 function makePageDriver(options = {}) {
 
   const hash = options.hash || false
@@ -46,7 +56,7 @@ function makePageDriver(options = {}) {
   const patterns = options.patterns || {}
 
   // history
-  const buildHistory = useQueries(supportsHistory && !hash ? createHistory : createHashHistory)
+  const buildHistory = useQueries(enabledHistory && !hash ? createHistory : createHashHistory)
   const history = typeof baseName == "undefined" ?
     buildHistory():
     useBasename(buildHistory)({
@@ -68,10 +78,11 @@ function makePageDriver(options = {}) {
       case Action.replace: {
         
         // foreign domain
-        const {host, protocol, path, queryString, state} = directive.location
+        const {host, protocol, path, queryString, state, hash} = directive.location
         if (host) {
-          const url = (protocol || "http") + "://" + host, location = window.location
+          let url = (protocol || "http") + "://" + host, location = window.location
           if (!isSameOrigin(url)) {
+            url += build(path, queryString, hash)
             action == Action.push ? location.href = url : location.replace(url)
             break
           }
@@ -79,6 +90,7 @@ function makePageDriver(options = {}) {
 
         const callback = action == Action.push ? history.push : history.replace
         callback({
+          hash: hash,
           query: queryString,
           pathname: path,
           state: state
@@ -118,7 +130,7 @@ function makePageDriver(options = {}) {
   function match(location, routes) {
 
     const orginal = global.location
-    const {query, pathname, state} = location
+    const {query, pathname, state, hash} = location
     const context = {
       args: {},
       location: {
@@ -126,6 +138,7 @@ function makePageDriver(options = {}) {
         protocol: orginal.protocol,
         path: pathname,
         canonicalPath: removeBaseName(baseName, pathname),
+        hash: hash,
         baseName: baseName,
         state: state,
         queryString: query
