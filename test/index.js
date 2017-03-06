@@ -1,4 +1,4 @@
-import Cycle from "@cycle/xstream-run"
+import {run, setup} from "@cycle/run"
 import xstream from "xstream"
 import {makePageDriver, Action} from "../index"
 import assert from "assert"
@@ -19,25 +19,25 @@ describe("cycle-page", () => {
 
   it("should change url.", () => {
     const pathname = location.pathname, page = makePageDriver()
-    Cycle.run(main, { page })
+    run(main, { page })
     assert.notStrictEqual(location.pathname, pathname)
   })
 
   it("should navigate url by hash fragment when option.hash == true.", () => {
     const page = makePageDriver({ hash: true })
-    Cycle.run(main, { page })
+    run(main, { page })
     assert.strictEqual(location.hash, "#/test")
   })
 
   it("should contains basename.", () => {
     const page = makePageDriver({ baseName: "cycle" })
-    Cycle.run(main, { page })
+    run(main, { page })
     assert.strictEqual(location.pathname, "/cycle/test")
   })
 
   it("should send an Context when history changed.", done => {
 
-    const {sources, run} = Cycle(main, {
+    const {sources, run} = setup(main, {
       page: makePageDriver()
     })
 
@@ -78,7 +78,7 @@ describe("cycle-page", () => {
       }
     }
     
-    const {sources, run} = Cycle(main, {
+    const {sources, run} = setup(main, {
       page: makePageDriver({
         patterns: {
           test: "/test/:id"
@@ -100,7 +100,7 @@ describe("cycle-page", () => {
 
   it("should capture link clicks when option.click === true", () => {
 
-    Cycle.run(main, {
+    run(main, {
       page: makePageDriver({
         click: true
       })
@@ -132,7 +132,7 @@ describe("cycle-page", () => {
   //     }
   //   }
 
-  //   Cycle.run(main, {
+  //   run(main, {
   //     page: makePageDriver()
   //   })
   // })
