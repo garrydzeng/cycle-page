@@ -1,4 +1,5 @@
 import xstream from "xstream"
+import {adapt} from '@cycle/run/lib/adapt'
 import domEvents from "dom-events"
 import {supportsHistory} from "history/lib/DOMUtils"
 import {useQueries, createHashHistory, createHistory, useBasename} from "history"
@@ -172,7 +173,7 @@ function makePageDriver(options = {}) {
 
     let unsubscrbe
 
-    return xstream.create({
+    const page$ = xstream.create({
       start: function startPageStream(listener) {
         
         // hack??
@@ -193,6 +194,8 @@ function makePageDriver(options = {}) {
         unsubscrbe()
       }
     })
+
+    return adapt(page$)
   }
 }
 
